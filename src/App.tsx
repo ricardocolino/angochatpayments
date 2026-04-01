@@ -134,8 +134,7 @@ export default function App() {
         },
         body: JSON.stringify({
           amount: Number(amountUSD),
-          currency: 'usd',
-          orderId: `ac_${Date.now()}_${session.user.id}`,
+          userId: session.user.id,
           orderDescription: `Recarga de ${Number(amountUSD) * AC_RATE} AngoCoins para ${profile?.username}`,
         }),
       });
