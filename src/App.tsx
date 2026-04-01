@@ -140,6 +140,13 @@ export default function App() {
         }),
       });
 
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('O servidor retornou um erro inesperado (HTML). Verifique se as rotas da API estão configuradas corretamente na Vercel.');
+      }
+
       const data = await response.json();
 
       if (data.invoice_url) {
