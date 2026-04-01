@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
@@ -9,24 +8,35 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Initialize Supabase with service role key for backend operations
-const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy Supabase client helper
+const getSupabase = () => {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Supabase credentials (VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY) are missing.");
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
 
 const AC_RATE = 100; // 1 USD = 100 AC
 
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "API is running" });
+});
+
 // NOWPayments API Endpoint
-app.post("/api/payments/create", async (req, res) => {
+const createPayment = async (req, res) => {
   const { amount, currency, orderId, orderDescription } = req.body;
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: "NOWPayments API Key is not configured." });
+    return res.status(500).json({ error: "NOWPayments API Key is not configured in Vercel environment variables." });
   }
 
   try {
-    // Detect the base URL automatically if APP_URL is not set
     const protocol = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers.host;
     const baseUrl = process.env.APP_URL || `${protocol}://${host}`;
@@ -58,19 +68,18 @@ app.post("/api/payments/create", async (req, res) => {
     }
   } catch (error) {
     console.error("Payment creation error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
   }
-});
+};
 
 // Webhook for payment status updates
-app.post("/api/payments/webhook", async (req, res) => {
+const handleWebhook = async (req, res) => {
   const ipnSecret = process.env.NOWPAYMENTS_IPN_SECRET;
   const signature = req.headers["x-nowpayments-sig"];
   const payload = req.body;
 
   console.log("NOWPayments Webhook received:", payload);
 
-  // 1. Verify Signature (Optional but recommended)
   if (ipnSecret && signature) {
     const hmac = crypto.createHmac("sha512", ipnSecret);
     hmac.update(JSON.stringify(payload, Object.keys(payload).sort()));
@@ -82,9 +91,8 @@ app.post("/api/payments/webhook", async (req, res) => {
     }
   }
 
-  // 2. Check if payment is finished
   if (payload.payment_status === "finished") {
-    const orderId = payload.order_id; // Format: ac_TIMESTAMP_USERID
+    const orderId = payload.order_id;
     const parts = orderId.split("_");
     const userId = parts[parts.length - 1];
     const amountPaid = parseFloat(payload.actually_paid || payload.price_amount);
@@ -96,8 +104,7 @@ app.post("/api/payments/webhook", async (req, res) => {
     }
 
     try {
-      // 3. Update User Balance in Supabase
-      // First, get current balance
+      const supabase = getSupabase();
       const { data: profile, error: fetchError } = await supabase
         .from("profiles")
         .select("balance")
@@ -116,10 +123,6 @@ app.post("/api/payments/webhook", async (req, res) => {
       if (updateError) throw updateError;
 
       console.log(`Successfully credited ${acToCredit} AC to user ${userId}. New balance: ${newBalance}`);
-      
-      // Optional: Log the transaction in a separate table if it exists
-      // await supabase.from("transactions").insert([{ user_id: userId, amount: acToCredit, type: 'topup', provider: 'nowpayments', external_id: payload.payment_id }]);
-
     } catch (error) {
       console.error("Error updating balance in Supabase:", error);
       return res.status(500).send("Error updating balance");
@@ -127,6 +130,16 @@ app.post("/api/payments/webhook", async (req, res) => {
   }
 
   res.status(200).send("OK");
-});
+};
+
+// Register routes with and without /api prefix
+app.post("/api/payments/create", createPayment);
+app.post("/payments/create", createPayment);
+
+app.post("/api/payments/webhook", handleWebhook);
+app.post("/payments/webhook", handleWebhook);
+
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 export default app;

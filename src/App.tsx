@@ -140,11 +140,17 @@ export default function App() {
         }),
       });
 
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('API Error Response:', text);
+        throw new Error(`Erro no servidor (${response.status}). Verifique se as variáveis de ambiente (NOWPAYMENTS_API_KEY, etc) estão configuradas na Vercel.`);
+      }
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
         console.error('Non-JSON response:', text);
-        throw new Error('O servidor retornou um erro inesperado (HTML). Verifique se as rotas da API estão configuradas corretamente na Vercel.');
+        throw new Error('O servidor retornou uma resposta inválida (não-JSON). Verifique se o arquivo vercel.json e a pasta api/ foram enviados corretamente.');
       }
 
       const data = await response.json();
