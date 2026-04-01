@@ -1,0 +1,5 @@
+{
+  "name": "Angochat Payments",
+  "description": "Gateway de pagamento oficial do Angochat para recarga de saldo.",
+  "requestFramePermissions": []
+}
