@@ -155,8 +155,8 @@ export default function App() {
       const data = await response.json();
 
       if (data.invoice_url) {
-        // Redirect user to NOWPayments checkout page
-        window.location.href = data.invoice_url;
+        // Request parent window to open the NOWPayments checkout page
+        window.parent.postMessage({ type: 'OPEN_URL', url: data.invoice_url }, '*');
       } else {
         throw new Error(data.error || 'Erro ao gerar fatura de pagamento');
       }
