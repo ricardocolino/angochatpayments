@@ -170,30 +170,13 @@ export default function App() {
   if (loading && !session) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-orange-500/30">
-      {/* Header */}
-      <header className="border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">Angochat <span className="text-orange-500">Payments</span></span>
-          </div>
-          {session && (
-            <button onClick={() => supabase.auth.signOut()} className="text-zinc-500 hover:text-zinc-100 transition-colors">
-              <LogOut className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-green-500/30">
       <main className="max-w-5xl mx-auto px-6 py-12">
         <AnimatePresence mode="wait">
           {!session ? (
@@ -221,7 +204,7 @@ export default function App() {
                           required
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-orange-500/50 transition-colors"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
                         />
                       </div>
                     </div>
@@ -235,7 +218,7 @@ export default function App() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-orange-500/50 transition-colors"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
                       />
                     </div>
                   </div>
@@ -248,7 +231,7 @@ export default function App() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-orange-500/50 transition-colors"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
                       />
                     </div>
                   </div>
@@ -259,7 +242,7 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+                    className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignUp ? 'Cadastrar' : 'Entrar na Conta')}
                   </button>
@@ -267,7 +250,7 @@ export default function App() {
 
                 <button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="w-full mt-6 text-sm text-zinc-500 hover:text-orange-500 transition-colors"
+                  className="w-full mt-6 text-sm text-zinc-500 hover:text-green-500 transition-colors"
                 >
                   {isSignUp ? 'Já tem conta? Entre aqui' : 'Novo no Angochat? Crie sua conta'}
                 </button>
@@ -282,29 +265,9 @@ export default function App() {
             >
               {/* Sidebar Info */}
               <div className="md:col-span-1 space-y-6">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center border border-zinc-700">
-                      <User className="w-6 h-6 text-zinc-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg">{profile?.username || 'Usuário'}</h3>
-                      <p className="text-zinc-500 text-xs truncate max-w-[150px]">{session.user.email}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800">
-                      <span className="text-xs text-zinc-500 font-medium">Status</span>
-                      <span className="text-xs text-green-500 font-bold flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" /> Verificado
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-orange-500/5 border border-orange-500/10 rounded-3xl p-6">
-                  <h4 className="text-sm font-bold text-orange-500 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" /> Taxa de Câmbio
+                <div className="bg-green-500/5 border border-green-500/10 rounded-3xl p-6">
+                  <h4 className="text-sm font-bold text-green-500 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" /> {profile?.username}, aqui está a taxa de câmbio
                   </h4>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
@@ -321,28 +284,10 @@ export default function App() {
 
               {/* Main Payment Area */}
               <div className="md:col-span-2 space-y-8">
-                {/* Balance Card */}
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-orange-500/20 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                    <Wallet className="w-32 h-32" />
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-orange-100 text-sm font-medium mb-1">Saldo AngoCoins</p>
-                    <h2 className="text-5xl font-black tracking-tighter mb-6">
-                      {profile?.balance || '0'} <span className="text-2xl opacity-70">AC</span>
-                    </h2>
-                    <div className="flex gap-4">
-                      <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
-                        ≈ ${(profile?.balance / 100).toFixed(2)} USD/USDT
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Top Up Section */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <PlusCircle className="w-6 h-6 text-orange-500" /> Comprar AngoCoins
+                    <PlusCircle className="w-6 h-6 text-green-500" /> Comprar AngoCoins
                   </h3>
 
                   <div className="space-y-6">
@@ -355,10 +300,10 @@ export default function App() {
                           placeholder="0.00"
                           value={amountUSD}
                           onChange={(e) => setAmountUSD(e.target.value)}
-                          className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-2xl py-5 pl-14 pr-6 text-3xl font-black focus:outline-none focus:border-orange-500 transition-all"
+                          className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-2xl py-5 pl-14 pr-6 text-3xl font-black focus:outline-none focus:border-green-500 transition-all"
                         />
                         {amountUSD && !isNaN(Number(amountUSD)) && (
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-500 font-bold text-lg">
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500 font-bold text-lg">
                             = {Number(amountUSD) * AC_RATE} AC
                           </div>
                         )}
@@ -384,7 +329,7 @@ export default function App() {
                     <button
                       onClick={handleTopUp}
                       disabled={isPaying || !amountUSD}
-                      className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-orange-500/20"
+                      className="w-full py-5 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-green-500/20"
                     >
                       {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                         <>
@@ -395,7 +340,7 @@ export default function App() {
 
                     <div className="mt-4 text-center">
                       <p className="text-[10px] text-zinc-500 flex items-center justify-center gap-1">
-                        Pagamentos seguros via <span className="font-bold text-orange-500">NOWPayments</span>
+                        Pagamentos seguros via <span className="font-bold text-green-500">NOWPayments</span>
                       </p>
                     </div>
 
