@@ -49,6 +49,7 @@ export default async function handler(req: any, res: any) {
           price_currency: "usd",
           order_id: `${userId}_${Date.now()}`,
           order_description: orderDescription || "Compra de AngoCoins",
+          currencies: ["usdttrc20", "usdterc20", "usdtbsc", "usdtpoly", "usdtsol"],
           success_url: `${baseUrl}/?payment=success`,
           cancel_url: `${baseUrl}/?payment=cancel`,
           ipn_callback_url: `${baseUrl}/api/webhook`
