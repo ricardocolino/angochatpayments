@@ -190,17 +190,16 @@ export default function App() {
               <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold">{isSignUp ? 'Criar Conta' : 'Acesse sua Carteira'}</h2>
-                  <p className="text-zinc-400 text-sm mt-2">Gerencie seus AngoCoins (AC)</p>
                 </div>
 
                 <form onSubmit={handleAuth} className="space-y-4">
                   {isSignUp && (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Username</label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                         <input
                           type="text"
+                          placeholder="Username"
                           required
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
@@ -210,11 +209,11 @@ export default function App() {
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Email</label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                       <input
                         type="email"
+                        placeholder="Email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -223,11 +222,11 @@ export default function App() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Senha</label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                       <input
                         type="password"
+                        placeholder="Senha"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -261,67 +260,40 @@ export default function App() {
               key="dashboard"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              className="max-w-2xl mx-auto space-y-8"
             >
-              {/* Sidebar Info */}
-              <div className="md:col-span-1 space-y-6">
-                <div className="bg-green-500/5 border border-green-500/10 rounded-3xl p-6">
-                  <h4 className="text-sm font-bold text-green-500 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" /> {profile?.username}, aqui está a taxa de câmbio
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-500">100 AC</span>
-                      <span className="text-zinc-100 font-bold">$1.00 USD/USDT</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-500">1 AC</span>
-                      <span className="text-zinc-100 font-bold">$0.01 USD/USDT</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Main Payment Area */}
-              <div className="md:col-span-2 space-y-8">
+              <div className="space-y-8">
                 {/* Top Up Section */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <PlusCircle className="w-6 h-6 text-green-500" /> Comprar AngoCoins
+                  <h3 className="text-xl font-bold mb-6">
+                    {profile?.username}
                   </h3>
 
                   <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Valor em USD / USDT</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-500">$</span>
-                        <input
-                          type="number"
-                          placeholder="0.00"
-                          value={amountUSD}
-                          onChange={(e) => setAmountUSD(e.target.value)}
-                          className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-2xl py-5 pl-14 pr-6 text-3xl font-black focus:outline-none focus:border-green-500 transition-all"
-                        />
-                        {amountUSD && !isNaN(Number(amountUSD)) && (
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500 font-bold text-lg">
-                            = {Number(amountUSD) * AC_RATE} AC
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-3 gap-4">
                       {[1, 5, 10].map((val) => (
                         <button 
                           key={val}
                           onClick={() => setAmountUSD(val.toString())}
-                          className="py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-bold transition-colors flex flex-col items-center"
+                          className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
+                            amountUSD === val.toString() 
+                            ? 'bg-green-500/20 border-green-500 text-green-500 shadow-lg shadow-green-500/10' 
+                            : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:border-zinc-700'
+                          }`}
                         >
-                          <span>${val} USD/USDT</span>
-                          <span className="text-[10px] text-zinc-500">{val * AC_RATE} AC</span>
+                          <span className="text-lg">$ {val}</span>
+                          <span className="text-[10px] opacity-60">{val * AC_RATE} AC</span>
                         </button>
                       ))}
                     </div>
+
+                    {amountUSD && (
+                      <div className="p-4 bg-green-500/5 border border-green-500/10 rounded-xl text-center">
+                        <p className="text-sm text-zinc-400">Você receberá</p>
+                        <p className="text-2xl font-black text-green-500">{Number(amountUSD) * AC_RATE} AngoCoins</p>
+                      </div>
+                    )}
 
                     {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{error}</div>}
                     {message && <div className="p-4 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl">{message}</div>}
@@ -331,24 +303,8 @@ export default function App() {
                       disabled={isPaying || !amountUSD}
                       className="w-full py-5 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-green-500/20"
                     >
-                      {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                        <>
-                          Confirmar Pagamento <ArrowRight className="w-6 h-6" />
-                        </>
-                      )}
+                      {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Pagamento'}
                     </button>
-
-                    <div className="mt-4 text-center">
-                      <p className="text-[10px] text-zinc-500 flex items-center justify-center gap-1">
-                        Pagamentos seguros via <span className="font-bold text-green-500">NOWPayments</span>
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-6 pt-4 opacity-30 grayscale">
-                      <div className="font-bold italic text-xl">USDT</div>
-                      <div className="font-bold text-xl">VISA</div>
-                      <div className="font-bold text-xl">MASTERCARD</div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -356,14 +312,6 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
-
-      <footer className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-900 text-center">
-        <p className="text-zinc-600 text-xs">
-          © 2026 Angochat Payments. Todos os direitos reservados. 
-          <br />
-          Processamento seguro via SSL 256-bit.
-        </p>
-      </footer>
     </div>
   );
 }
