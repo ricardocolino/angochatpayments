@@ -15,7 +15,11 @@ import {
   ArrowRight,
   ShieldCheck,
   History,
-  TrendingUp
+  TrendingUp,
+  Bitcoin,
+  Globe,
+  Smartphone,
+  Building2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -31,6 +35,7 @@ export default function App() {
   const [message, setMessage] = useState<string | null>(null);
   
   // Payment states
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [amountUSD, setAmountUSD] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
 
@@ -170,13 +175,13 @@ export default function App() {
   if (loading && !session) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-green-500/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-red-500/30">
       <main className="max-w-5xl mx-auto px-6 py-12">
         <AnimatePresence mode="wait">
           {!session ? (
@@ -203,7 +208,7 @@ export default function App() {
                           required
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
                         />
                       </div>
                     </div>
@@ -217,7 +222,7 @@ export default function App() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
                       />
                     </div>
                   </div>
@@ -230,18 +235,18 @@ export default function App() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-green-500/50 transition-colors"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
                       />
                     </div>
                   </div>
 
                   {error && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{error}</div>}
-                  {message && <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-lg">{message}</div>}
+                  {message && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{message}</div>}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
+                    className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignUp ? 'Cadastrar' : 'Entrar na Conta')}
                   </button>
@@ -249,19 +254,90 @@ export default function App() {
 
                 <button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="w-full mt-6 text-sm text-zinc-500 hover:text-green-500 transition-colors"
+                  className="w-full mt-6 text-sm text-zinc-500 hover:text-red-500 transition-colors"
                 >
                   {isSignUp ? 'Já tem conta? Entre aqui' : 'Novo no Angochat? Crie sua conta'}
                 </button>
               </div>
             </motion.div>
+          ) : !selectedMethod ? (
+            <motion.div
+              key="method-select"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-md mx-auto px-4"
+            >
+              <div className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
+                
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-10 h-1 bg-zinc-800 rounded-full mb-6 opacity-50" />
+                  <h2 className="text-lg font-black text-zinc-400 tracking-widest uppercase italic">Pagamento</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: 'bitcoin', name: 'Bitcoin', icon: Bitcoin, available: true },
+                    { id: 'airtm', name: 'Airtm', icon: Globe, available: false },
+                    { id: 'multicaixa', name: 'Express', icon: Smartphone, available: false },
+                    { id: 'banco', name: 'Banco', icon: Building2, available: false },
+                  ].map((method) => (
+                    <button
+                      key={method.id}
+                      onClick={() => method.available && setSelectedMethod(method.id)}
+                      disabled={!method.available}
+                      className={`group relative border rounded-3xl p-5 flex flex-col items-center justify-center gap-3 transition-all shadow-lg ${
+                        method.available 
+                        ? 'bg-zinc-950 border-zinc-800 hover:border-red-500/50 active:scale-95' 
+                        : 'bg-zinc-900/50 border-zinc-900 cursor-not-allowed grayscale opacity-60'
+                      }`}
+                    >
+                      {!method.available && (
+                        <div className="absolute top-2 right-2">
+                          <div className="w-1.5 h-1.5 bg-zinc-700 rounded-full animate-pulse" />
+                        </div>
+                      )}
+                      
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                        method.available ? 'bg-red-500/5 group-hover:bg-red-500/10' : 'bg-zinc-800/20'
+                      }`}>
+                        <method.icon className={`w-6 h-6 ${method.available ? 'text-red-500' : 'text-zinc-700'}`} />
+                      </div>
+                      
+                      <div className="flex flex-col items-center gap-1">
+                        <span className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                          method.available ? 'text-zinc-500 group-hover:text-zinc-100' : 'text-zinc-700'
+                        }`}>
+                          {method.name}
+                        </span>
+                        {!method.available && (
+                          <span className="text-[8px] font-black text-zinc-800 uppercase tracking-tighter">Em breve</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <p className="mt-8 text-[10px] text-zinc-600 font-bold text-center uppercase tracking-[0.2em]">Selecione um método acima</p>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               className="max-w-2xl mx-auto space-y-8"
             >
+              <button 
+                onClick={() => {
+                  setSelectedMethod(null);
+                  setAmountUSD('');
+                }}
+                className="text-xs text-zinc-500 hover:text-red-500 flex items-center gap-1 transition-colors"
+              >
+                ← Voltar para métodos
+              </button>
               {/* Main Payment Area */}
               <div className="space-y-8">
                 {/* Top Up Section */}
@@ -278,7 +354,7 @@ export default function App() {
                           onClick={() => setAmountUSD(val.toString())}
                           className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
                             amountUSD === val.toString() 
-                            ? 'bg-green-500/20 border-green-500 text-green-500 shadow-lg shadow-green-500/10' 
+                            ? 'bg-red-500/20 border-red-500 text-red-500 shadow-lg shadow-red-500/10' 
                             : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:border-zinc-700'
                           }`}
                         >
@@ -289,19 +365,19 @@ export default function App() {
                     </div>
 
                     {amountUSD && (
-                      <div className="p-4 bg-green-500/5 border border-green-500/10 rounded-xl text-center">
+                      <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
                         <p className="text-sm text-zinc-400">Você receberá</p>
-                        <p className="text-2xl font-black text-green-500">{Number(amountUSD) * AC_RATE} AngoCoins</p>
+                        <p className="text-2xl font-black text-red-500">{Number(amountUSD) * AC_RATE} AngoCoins</p>
                       </div>
                     )}
 
                     {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{error}</div>}
-                    {message && <div className="p-4 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl">{message}</div>}
+                    {message && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{message}</div>}
 
                     <button
                       onClick={handleTopUp}
                       disabled={isPaying || !amountUSD}
-                      className="w-full py-5 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-green-500/20"
+                      className="w-full py-5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-red-500/20"
                     >
                       {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Pagamento'}
                     </button>
