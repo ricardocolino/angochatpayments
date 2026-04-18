@@ -39,6 +39,7 @@ export default function App() {
   const [amountUSD, setAmountUSD] = useState<string>('');
   const [transactionRef, setTransactionRef] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
+  const [airtmStep, setAirtmStep] = useState<1 | 2>(1);
 
   const AC_RATE = 100; // 1 USD/USDT = 100 AC
 
@@ -335,12 +336,17 @@ export default function App() {
             >
               <button 
                 onClick={() => {
-                  setSelectedMethod(null);
-                  setAmountUSD('');
+                  if (selectedMethod === 'airtm' && airtmStep === 2) {
+                    setAirtmStep(1);
+                  } else {
+                    setSelectedMethod(null);
+                    setAmountUSD('');
+                    setAirtmStep(1);
+                  }
                 }}
                 className="text-xs text-zinc-500 hover:text-red-500 flex items-center gap-1 transition-colors"
               >
-                ← Voltar para métodos
+                ← {selectedMethod === 'airtm' && airtmStep === 2 ? 'Mudar valor' : 'Voltar para métodos'}
               </button>
               {/* Main Payment Area */}
               <div className="space-y-8">
@@ -353,99 +359,137 @@ export default function App() {
                   <div className="space-y-6">
                     {selectedMethod === 'airtm' ? (
                       <div className="space-y-6">
-                        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Enviar para (Airtm)</span>
-                            <span className="px-2 py-1 bg-red-500/10 text-red-500 text-[10px] font-bold rounded-lg uppercase">Pagamento Direto</span>
+                        {airtmStep === 1 ? (
+                          <div className="space-y-6">
+                            <div className="flex flex-col items-center mb-4">
+                              <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 mb-2">Passo 01/02</span>
+                              <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-tight">Quanto deseja carregar?</h4>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {[0.2, 0.5, 1, 5, 10].map((val) => (
+                                <button 
+                                  key={val}
+                                  onClick={() => setAmountUSD(val.toString())}
+                                  className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
+                                    amountUSD === val.toString() 
+                                    ? 'bg-red-500/20 border-red-500 text-red-500 shadow-lg shadow-red-500/10 scale-[1.02]' 
+                                    : 'bg-zinc-800/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700'
+                                  }`}
+                                >
+                                  <span className="text-lg tracking-tighter truncate">$ {val}</span>
+                                  <span className="text-[10px] opacity-40 italic">{(val * AC_RATE).toLocaleString()} AC</span>
+                                </button>
+                              ))}
+                            </div>
+
+                            {amountUSD && (
+                              <button
+                                onClick={() => setAirtmStep(2)}
+                                className="w-full py-5 bg-zinc-100 text-zinc-950 hover:bg-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 shadow-xl"
+                              >
+                                Próximo Passo <ArrowRight className="w-5 h-5" />
+                              </button>
+                            )}
                           </div>
-                          <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 flex items-center justify-between">
-                            <span className="text-zinc-100 font-mono text-sm">loryloriana130@gmail.com</span>
-                            <button 
-                              onClick={() => {
-                                navigator.clipboard.writeText('loryloriana130@gmail.com');
-                                setMessage('Copiado!');
-                                setTimeout(() => setMessage(null), 2000);
+                        ) : (
+                          <div className="space-y-6">
+                            <div className="flex flex-col items-center mb-4">
+                              <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 mb-2">Passo 02/02</span>
+                              <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-tight">Instruções de Envio</h4>
+                            </div>
+
+                            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Envia para @Airtm</span>
+                                <div className="flex items-center gap-1">
+                                  <span className="w-1 h-1 bg-red-400 rounded-full animate-pulse" />
+                                  <span className="text-[8px] text-red-500 font-black uppercase tracking-widest">Saldo: ${amountUSD}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 flex items-center justify-between group">
+                                <span className="text-zinc-100 font-black tracking-tight text-base">angochat</span>
+                                <button 
+                                  onClick={() => {
+                                    navigator.clipboard.writeText('angochat');
+                                    setMessage('Copiado!');
+                                    setTimeout(() => setMessage(null), 2000);
+                                  }}
+                                  className="px-4 py-2 bg-red-500/10 text-red-500 text-[10px] font-black rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest"
+                                >
+                                  Copiar
+                                </button>
+                              </div>
+
+                              <div className="space-y-2">
+                                <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tighter">
+                                  1. Abra sua conta Airtm<br />
+                                  2. Selecione "Enviar" e use o usuário <span className="text-red-500">angochat</span><br />
+                                  3. Envie exatamente <span className="text-red-500">${amountUSD}</span><br />
+                                  4. Cole o ID da transação abaixo:
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="relative group">
+                              <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-red-500 transition-colors" />
+                              <input
+                                type="text"
+                                placeholder="ID da Transação"
+                                value={transactionRef}
+                                onChange={(e) => setTransactionRef(e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl py-5 pl-12 pr-6 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-bold"
+                              />
+                            </div>
+
+                            {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase rounded-xl tracking-wider">{error}</div>}
+                            {message && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase rounded-xl tracking-wider text-center">{message}</div>}
+
+                            <button
+                              onClick={async () => {
+                                if (!amountUSD || !transactionRef) {
+                                  setError('Preencha as informações solicitadas.');
+                                  return;
+                                }
+                                setIsPaying(true);
+                                setError(null);
+                                
+                                try {
+                                  const { error: insertError } = await supabase
+                                    .from('transactions')
+                                    .insert([{
+                                      user_id: session.user.id,
+                                      amount: Number(amountUSD),
+                                      method: 'airtm',
+                                      transaction_ref: transactionRef,
+                                      status: 'pending'
+                                    }]);
+
+                                  if (insertError) throw insertError;
+
+                                  setMessage('ENVIADO! Aguarde a verificação administrativa.');
+                                  setTransactionRef('');
+                                  setAmountUSD('');
+                                  setTimeout(() => {
+                                    setAirtmStep(1);
+                                    setSelectedMethod(null);
+                                    setMessage(null);
+                                  }, 3000);
+                                } catch (err: any) {
+                                  console.error('Error saving transaction:', err);
+                                  setError('Erro de conexão. Tente novamente.');
+                                } finally {
+                                  setIsPaying(false);
+                                }
                               }}
-                              className="text-[10px] text-red-500 font-bold hover:underline uppercase"
+                              disabled={isPaying || !amountUSD || !transactionRef}
+                              className="w-full py-6 bg-red-500 hover:bg-red-600 text-white rounded-[2rem] font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl shadow-red-500/40 uppercase tracking-widest italic"
                             >
-                              Copiar
+                              {isPaying ? <Loader2 className="w-7 h-7 animate-spin" /> : 'Confirmar Envio'}
                             </button>
                           </div>
-                          <p className="text-[10px] text-zinc-600 leading-relaxed italic">
-                            * Após enviar o valor na Airtm, insira o ID da transação ou seu usuário abaixo para validação.
-                          </p>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-3 gap-4">
-                            {[1, 5, 10].map((val) => (
-                              <button 
-                                key={val}
-                                onClick={() => setAmountUSD(val.toString())}
-                                className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
-                                  amountUSD === val.toString() 
-                                  ? 'bg-red-500/20 border-red-500 text-red-500 shadow-lg shadow-red-500/10' 
-                                  : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:border-zinc-700'
-                                }`}
-                              >
-                                <span className="text-lg">$ {val}</span>
-                                <span className="text-[10px] opacity-60">{val * AC_RATE} AC</span>
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="relative">
-                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
-                            <input
-                              type="text"
-                              placeholder="ID da Transação ou Seu Airtm"
-                              value={transactionRef}
-                              onChange={(e) => setTransactionRef(e.target.value)}
-                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-4 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors text-sm"
-                            />
-                          </div>
-                        </div>
-
-                        {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{error}</div>}
-                        {message && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{message}</div>}
-
-                        <button
-                          onClick={async () => {
-                            if (!amountUSD || !transactionRef) {
-                              setError('Selecione um valor e informe o comprovante.');
-                              return;
-                            }
-                            setIsPaying(true);
-                            setError(null);
-                            
-                            try {
-                              const { error: insertError } = await supabase
-                                .from('transactions')
-                                .insert([{
-                                  user_id: session.user.id,
-                                  amount: Number(amountUSD),
-                                  method: 'airtm',
-                                  transaction_ref: transactionRef,
-                                  status: 'pending'
-                                }]);
-
-                              if (insertError) throw insertError;
-
-                              setMessage('Solicitação enviada! Aguarde a validação manual do administrador.');
-                              setTransactionRef('');
-                              setAmountUSD('');
-                            } catch (err: any) {
-                              console.error('Error saving transaction:', err);
-                              setError('Erro ao salvar solicitação. Verifique se a tabela "transactions" foi criada corretamente no SQL.');
-                            } finally {
-                              setIsPaying(false);
-                            }
-                          }}
-                          disabled={isPaying || !amountUSD || !transactionRef}
-                          className="w-full py-5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-red-500/20"
-                        >
-                          {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Envio Manual'}
-                        </button>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-6">
