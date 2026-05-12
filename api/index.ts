@@ -36,9 +36,9 @@ export default async function handler(req: any, res: any) {
     const baseUrl = process.env.APP_URL || `${protocol}://${host}`;
 
     try {
-      console.log(`Iniciando criação de fatura: User=${userId}, Valor=${amount}`);
+      console.log(`Iniciando criação de pagamento direto: User=${userId}, Valor=${amount}`);
       
-      const response = await fetch("https://api.nowpayments.io/v1/invoice", {
+      const response = await fetch("https://api.nowpayments.io/v1/payment", {
         method: "POST",
         headers: { 
           "x-api-key": apiKey, 
@@ -47,10 +47,9 @@ export default async function handler(req: any, res: any) {
         body: JSON.stringify({
           price_amount: amount,
           price_currency: "usd",
+          pay_currency: "btc",
           order_id: `${userId}_${Date.now()}`,
           order_description: orderDescription || "Compra de AngoCoins",
-          success_url: `${baseUrl}/?payment=success`,
-          cancel_url: `${baseUrl}/?payment=cancel`,
           ipn_callback_url: `${baseUrl}/api/webhook`
         }),
       });

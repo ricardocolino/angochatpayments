@@ -13,7 +13,8 @@ import {
   PlusCircle, 
   CreditCard, 
   History,
-  TrendingUp
+  TrendingUp,
+  Bitcoin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -33,6 +34,12 @@ export default function App() {
   const [amountUSD, setAmountUSD] = useState<string>('');
   const [transactionRef, setTransactionRef] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    pay_address: string;
+    pay_amount: number;
+    pay_currency: string;
+    payment_id: string;
+  } | null>(null);
 
   const AC_RATE = 100; // 1 USD/USDT = 100 AC
 
@@ -154,11 +161,18 @@ export default function App() {
 
       const data = await response.json();
 
-      if (data.invoice_url) {
-        // Request parent window to open the NOWPayments checkout page
+      if (data.pay_address) {
+        setPaymentDetails({
+          pay_address: data.pay_address,
+          pay_amount: data.pay_amount,
+          pay_currency: data.pay_currency,
+          payment_id: data.payment_id
+        });
+      } else if (data.invoice_url) {
+        // Fallback para caso retorne invoice_url
         window.parent.postMessage({ type: 'OPEN_URL', url: data.invoice_url }, '*');
       } else {
-        throw new Error(data.error || 'Erro ao gerar fatura de pagamento');
+        throw new Error(data.error || 'Erro ao gerar dados de pagamento');
       }
     } catch (err: any) {
       console.error('Payment error:', err);
@@ -264,44 +278,107 @@ export default function App() {
             >
               <div className="flex flex-col items-center justify-center">
                 <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 w-full max-w-xl shadow-sm">
-                  <div className="mb-8">
-                    <h3 className="text-lg font-black text-zinc-900">
-                      @{profile?.username}
-                    </h3>
-                  </div>
+                  {paymentDetails ? (
+                    <div className="space-y-8">
+                      <div className="flex flex-col items-center text-center space-y-2">
+                        <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-2">
+                          <Bitcoin className="w-8 h-8 text-zinc-900" />
+                        </div>
+                        <h3 className="text-xl font-black text-zinc-900">Pagamento Bitcoin</h3>
+                        <p className="text-sm text-zinc-500">Envie o valor exato para o endereço abaixo</p>
+                      </div>
 
-                  <div className="space-y-8">
-                    <div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {[1, 5, 10, 20].map((val) => (
-                          <button 
-                            key={val}
-                            onClick={() => setAmountUSD(val.toString())}
-                            className={`py-5 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
-                              amountUSD === val.toString() 
-                              ? 'bg-zinc-50 border-zinc-900 text-zinc-900' 
-                              : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50 hover:border-zinc-200'
-                            }`}
-                          >
-                            <span className="text-xs font-bold opacity-70 mb-1">{val * AC_RATE} AC</span>
-                            <span className="text-xl font-black leading-none">$ {val}</span>
-                          </button>
-                        ))}
+                      <div className="flex flex-col items-center justify-center bg-zinc-50 rounded-2xl p-6 border border-zinc-100">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${paymentDetails.pay_address}`}
+                          alt="QR Code de Pagamento"
+                          className="w-40 h-40 mb-4"
+                        />
+                        <div className="text-center">
+                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Valor a Enviar</p>
+                          <p className="text-lg font-black text-zinc-900 uppercase">
+                            {paymentDetails.pay_amount} {paymentDetails.pay_currency}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Endereço da Carteira</p>
+                          <div className="flex items-center gap-2 p-4 bg-white border border-zinc-200 rounded-xl">
+                            <span className="flex-1 font-mono text-[10px] break-all text-zinc-600">
+                              {paymentDetails.pay_address}
+                            </span>
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(paymentDetails.pay_address);
+                                setMessage('Endereço copiado!');
+                                setTimeout(() => setMessage(null), 2000);
+                              }}
+                              className="p-2 hover:bg-zinc-50 rounded-lg transition-colors"
+                            >
+                              <PlusCircle className="w-4 h-4 text-zinc-900 rotate-45" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                          <p className="text-[10px] text-zinc-500 leading-relaxed text-center">
+                            O saldo será creditado automaticamente após a confirmação na rede blockchain (geralmente 10-30 min).
+                          </p>
+                        </div>
+
+                        {message && <div className="p-4 bg-zinc-900 text-white text-[10px] font-bold text-center rounded-xl animate-in fade-in slide-in-from-bottom-2 uppercase tracking-widest">{message}</div>}
+
+                        <button
+                          onClick={() => setPaymentDetails(null)}
+                          className="w-full py-4 border-2 border-zinc-900 text-zinc-900 rounded-xl font-bold transition-all hover:bg-zinc-50"
+                        >
+                          Voltar
+                        </button>
                       </div>
                     </div>
+                  ) : (
+                    <>
+                      <div className="mb-8">
+                        <h3 className="text-lg font-black text-zinc-900">
+                          @{profile?.username}
+                        </h3>
+                      </div>
 
-                    {error && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{error}</div>}
-                    {message && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{message}</div>}
+                      <div className="space-y-8">
+                        <div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {[1, 5, 10, 20].map((val) => (
+                              <button 
+                                key={val}
+                                onClick={() => setAmountUSD(val.toString())}
+                                className={`py-5 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
+                                  amountUSD === val.toString() 
+                                  ? 'bg-zinc-50 border-zinc-900 text-zinc-900' 
+                                  : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50 hover:border-zinc-200'
+                                }`}
+                              >
+                                <span className="text-xs font-bold opacity-70 mb-1">{val * AC_RATE} AC</span>
+                                <span className="text-xl font-black leading-none">$ {val}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                    <button
-                      onClick={handleTopUp}
-                      disabled={isPaying || !amountUSD}
-                      className="w-full py-5 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
-                    >
-                      {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
-                    </button>
+                        {error && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{error}</div>}
+                        {message && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{message}</div>}
 
-                  </div>
+                        <button
+                          onClick={handleTopUp}
+                          disabled={isPaying || !amountUSD}
+                          className="w-full py-5 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                        >
+                          {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
