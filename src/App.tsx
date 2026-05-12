@@ -56,11 +56,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+        supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
       setSession(session);
       if (session) fetchProfile(session.user.id);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -72,14 +78,25 @@ export default function App() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (data) setProfile(data);
-    if (error) console.error('Error fetching profile:', error);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (data) setProfile(data);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile not found - might need to create it
+          console.warn('Profile not found for user:', userId);
+        } else {
+          console.error('Error fetching profile:', error);
+        }
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -147,9 +164,10 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        console.error('API Error Response:', text);
-        throw new Error(`Erro no servidor (${response.status}). Verifique se as variáveis de ambiente (NOWPAYMENTS_API_KEY, etc) estão configuradas na Vercel.`);
+        const data = await response.json().catch(() => ({}));
+        const details = data.details || data.error || 'Erro desconhecido';
+        console.error('API Error Response:', data);
+        throw new Error(details);
       }
 
       const contentType = response.headers.get('content-type');
@@ -348,8 +366,8 @@ export default function App() {
 
                       <div className="space-y-8">
                         <div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {[1, 5, 10, 20].map((val) => (
+                          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+                            {[10, 20, 50, 100].map((val) => (
                               <button 
                                 key={val}
                                 onClick={() => setAmountUSD(val.toString())}

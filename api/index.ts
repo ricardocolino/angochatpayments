@@ -58,9 +58,16 @@ export default async function handler(req: any, res: any) {
       
       if (!response.ok) {
         console.error("Erro na NOWPayments:", data);
+        let errorMsg = data.message || data.error || (typeof data === 'string' ? data : JSON.stringify(data));
+        
+        // Tradução amigável para erro de valor mínimo
+        if (errorMsg.includes('minimal') || data.code === 'AMOUNT_MINIMAL_ERROR') {
+          errorMsg = "O valor escolhido é muito baixo para pagar com Bitcoin. Por favor, escolha uma quantia maior (recomendado $10 ou mais).";
+        }
+
         return res.status(response.status).json({ 
           error: "A NOWPayments recusou o pedido.", 
-          details: data.message || data 
+          details: errorMsg 
         });
       }
 
