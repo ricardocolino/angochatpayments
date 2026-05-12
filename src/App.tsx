@@ -264,24 +264,16 @@ export default function App() {
             >
               <div className="flex flex-col items-center justify-center">
                 <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 w-full max-w-xl shadow-sm">
-                  <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">Conta Selecionada</p>
-                      <h3 className="text-2xl font-black text-zinc-900">
-                        @{profile?.username}
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">Saldo Atual</p>
-                      <p className="text-lg font-black text-[#FE2C55]">{profile?.balance || 0} AC</p>
-                    </div>
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-black text-zinc-900">
+                      @{profile?.username}
+                    </h3>
                   </div>
 
                   <div className="space-y-8">
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900 mb-4">Escolha a quantidade de AngoCoins</h4>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {[1, 5, 10, 20, 50, 100].map((val) => (
+                        {[1, 5, 10, 20].map((val) => (
                           <button 
                             key={val}
                             onClick={() => setAmountUSD(val.toString())}
@@ -309,9 +301,6 @@ export default function App() {
                       {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
                     </button>
 
-                    <p className="text-[10px] text-zinc-400 text-center uppercase tracking-widest font-bold">
-                      Pagamento seguro via NOWPayments (Bitcoin/Crypto)
-                    </p>
                   </div>
                 </div>
               </div>
