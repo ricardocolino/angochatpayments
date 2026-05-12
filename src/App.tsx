@@ -265,7 +265,7 @@ export default function App() {
               <div className="flex flex-col items-center justify-center">
                 <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 w-full max-w-xl shadow-sm">
                   <div className="mb-8">
-                    <h3 className="text-2xl font-black text-zinc-900">
+                    <h3 className="text-lg font-black text-zinc-900">
                       @{profile?.username}
                     </h3>
                   </div>
