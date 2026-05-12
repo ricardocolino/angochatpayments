@@ -170,13 +170,13 @@ export default function App() {
   if (loading && !session) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#FE2C55] animate-spin" />
+        <Loader2 className="w-8 h-8 text-zinc-900 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] text-zinc-900 font-sans selection:bg-[#FE2C55]/20">
+    <div className="min-h-screen bg-[#F8F8F8] text-zinc-900 font-sans selection:bg-zinc-200">
       <main className="max-w-5xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {!session ? (
@@ -203,7 +203,7 @@ export default function App() {
                           required
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-zinc-900 transition-colors"
                         />
                       </div>
                     </div>
@@ -217,7 +217,7 @@ export default function App() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-zinc-900 transition-colors"
                       />
                     </div>
                   </div>
@@ -230,18 +230,18 @@ export default function App() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-zinc-900 transition-colors"
                       />
                     </div>
                   </div>
 
-                  {error && <div className="p-3 bg-red-50 border border-red-100 text-red-500 text-sm rounded-lg">{error}</div>}
-                  {message && <div className="p-3 bg-red-50 border border-red-100 text-red-500 text-sm rounded-lg">{message}</div>}
+                  {error && <div className="p-3 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-lg">{error}</div>}
+                  {message && <div className="p-3 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-lg">{message}</div>}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-[#FE2C55] hover:bg-[#E1284A] text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-zinc-900 hover:bg-black text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignUp ? 'Cadastrar' : 'Entrar na Conta')}
                   </button>
@@ -249,7 +249,7 @@ export default function App() {
 
                 <button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="w-full mt-6 text-sm text-zinc-500 hover:text-[#FE2C55] transition-colors"
+                  className="w-full mt-6 text-sm text-zinc-500 hover:text-black transition-colors"
                 >
                   {isSignUp ? 'Já tem conta? Entre aqui' : 'Novo no Angochat? Crie sua conta'}
                 </button>
@@ -279,7 +279,7 @@ export default function App() {
                             onClick={() => setAmountUSD(val.toString())}
                             className={`py-5 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
                               amountUSD === val.toString() 
-                              ? 'bg-zinc-50 border-[#FE2C55] text-zinc-900' 
+                              ? 'bg-zinc-50 border-zinc-900 text-zinc-900' 
                               : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50 hover:border-zinc-200'
                             }`}
                           >
@@ -290,13 +290,13 @@ export default function App() {
                       </div>
                     </div>
 
-                    {error && <div className="p-4 bg-red-50 border border-red-100 text-red-500 text-sm rounded-xl">{error}</div>}
-                    {message && <div className="p-4 bg-green-50 border border-green-100 text-green-600 text-sm rounded-xl">{message}</div>}
+                    {error && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{error}</div>}
+                    {message && <div className="p-4 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl">{message}</div>}
 
                     <button
                       onClick={handleTopUp}
                       disabled={isPaying || !amountUSD}
-                      className="w-full py-5 bg-[#FE2C55] hover:bg-[#E1284A] text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                      className="w-full py-5 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
                     >
                       {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
                     </button>
