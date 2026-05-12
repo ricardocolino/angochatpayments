@@ -12,14 +12,8 @@ import {
   Wallet, 
   PlusCircle, 
   CreditCard, 
-  ArrowRight,
-  ShieldCheck,
   History,
-  TrendingUp,
-  Bitcoin,
-  Globe,
-  Smartphone,
-  Building2
+  TrendingUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,11 +29,10 @@ export default function App() {
   const [message, setMessage] = useState<string | null>(null);
   
   // Payment states
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>('bitcoin');
   const [amountUSD, setAmountUSD] = useState<string>('');
   const [transactionRef, setTransactionRef] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
-  const [airtmStep, setAirtmStep] = useState<1 | 2>(1);
 
   const AC_RATE = 100; // 1 USD/USDT = 100 AC
 
@@ -176,15 +169,15 @@ export default function App() {
 
   if (loading && !session) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#FE2C55] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-red-500/30">
-      <main className="max-w-5xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-[#F8F8F8] text-zinc-900 font-sans selection:bg-[#FE2C55]/20">
+      <main className="max-w-5xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {!session ? (
             <motion.div
@@ -194,61 +187,61 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               className="max-w-md mx-auto"
             >
-              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+              <div className="bg-white border border-zinc-200 rounded-2xl p-8 shadow-sm">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold">{isSignUp ? 'Criar Conta' : 'Acesse sua Carteira'}</h2>
+                  <h2 className="text-2xl font-bold text-zinc-900">{isSignUp ? 'Criar Conta' : 'Acesse sua Carteira'}</h2>
                 </div>
 
                 <form onSubmit={handleAuth} className="space-y-4">
                   {isSignUp && (
                     <div className="space-y-1.5">
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                         <input
                           type="text"
                           placeholder="Username"
                           required
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
                         />
                       </div>
                     </div>
                   )}
                   <div className="space-y-1.5">
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                       <input
                         type="email"
                         placeholder="Email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                       <input
                         type="password"
                         placeholder="Senha"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-500/50 transition-colors"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-[#FE2C55] transition-colors"
                       />
                     </div>
                   </div>
 
-                  {error && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{error}</div>}
-                  {message && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{message}</div>}
+                  {error && <div className="p-3 bg-red-50 border border-red-100 text-red-500 text-sm rounded-lg">{error}</div>}
+                  {message && <div className="p-3 bg-red-50 border border-red-100 text-red-500 text-sm rounded-lg">{message}</div>}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
+                    className="w-full py-4 bg-[#FE2C55] hover:bg-[#E1284A] text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignUp ? 'Cadastrar' : 'Entrar na Conta')}
                   </button>
@@ -256,75 +249,10 @@ export default function App() {
 
                 <button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="w-full mt-6 text-sm text-zinc-500 hover:text-red-500 transition-colors"
+                  className="w-full mt-6 text-sm text-zinc-500 hover:text-[#FE2C55] transition-colors"
                 >
                   {isSignUp ? 'Já tem conta? Entre aqui' : 'Novo no Angochat? Crie sua conta'}
                 </button>
-              </div>
-            </motion.div>
-          ) : !selectedMethod ? (
-            <motion.div
-              key="method-select"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-md mx-auto px-4"
-            >
-              <div className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
-                
-                <div className="flex flex-col items-center mb-8">
-                  <div className="w-10 h-1 bg-zinc-800 rounded-full mb-6 opacity-50" />
-                  <h2 className="text-lg font-black text-zinc-400 tracking-widest uppercase italic">Pagamento</h2>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { id: 'bitcoin', name: 'Bitcoin', icon: Bitcoin, available: true },
-                    { id: 'airtm', name: 'Airtm', icon: Globe, available: true, isManual: true },
-                    { id: 'multicaixa', name: 'Express', icon: Smartphone, available: false },
-                    { id: 'banco', name: 'Banco', icon: Building2, available: false },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => method.available && setSelectedMethod(method.id)}
-                      disabled={!method.available}
-                      className={`group relative border rounded-3xl p-5 flex flex-col items-center justify-center gap-3 transition-all shadow-lg ${
-                        method.available 
-                        ? 'bg-zinc-950 border-zinc-800 hover:border-red-500/50 active:scale-95' 
-                        : 'bg-zinc-900/50 border-zinc-900 cursor-not-allowed grayscale opacity-60'
-                      }`}
-                    >
-                      {!method.available && (
-                        <div className="absolute top-2 right-2">
-                          <div className="w-1.5 h-1.5 bg-zinc-700 rounded-full animate-pulse" />
-                        </div>
-                      )}
-                      
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-                        method.available ? 'bg-red-500/5 group-hover:bg-red-500/10' : 'bg-zinc-800/20'
-                      }`}>
-                        <method.icon className={`w-6 h-6 ${method.available ? 'text-red-500' : 'text-zinc-700'}`} />
-                      </div>
-                      
-                      <div className="flex flex-col items-center gap-1">
-                        <span className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                          method.available ? 'text-zinc-500 group-hover:text-zinc-100' : 'text-zinc-700'
-                        }`}>
-                          {method.name}
-                        </span>
-                        {method.available && method.isManual && (
-                          <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter">Manual</span>
-                        )}
-                        {!method.available && (
-                          <span className="text-[8px] font-black text-zinc-800 uppercase tracking-tighter">Em breve</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <p className="mt-8 text-[10px] text-zinc-600 font-bold text-center uppercase tracking-[0.2em]">Selecione um método acima</p>
               </div>
             </motion.div>
           ) : (
@@ -332,203 +260,58 @@ export default function App() {
               key="dashboard"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="max-w-2xl mx-auto space-y-8"
+              className="max-w-2xl mx-auto"
             >
-              <button 
-                onClick={() => {
-                  if (selectedMethod === 'airtm' && airtmStep === 2) {
-                    setAirtmStep(1);
-                  } else {
-                    setSelectedMethod(null);
-                    setAmountUSD('');
-                    setAirtmStep(1);
-                  }
-                }}
-                className="text-xs text-zinc-500 hover:text-red-500 flex items-center gap-1 transition-colors"
-              >
-                ← {selectedMethod === 'airtm' && airtmStep === 2 ? 'Mudar valor' : 'Voltar para métodos'}
-              </button>
-              {/* Main Payment Area */}
-              <div className="space-y-8">
-                {/* Top Up Section */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8">
-                  <h3 className="text-xl font-bold mb-6">
-                    {profile?.username}
-                  </h3>
+              <div className="flex flex-col items-center justify-center">
+                <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 w-full max-w-xl shadow-sm">
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">Conta Selecionada</p>
+                      <h3 className="text-2xl font-black text-zinc-900">
+                        @{profile?.username}
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">Saldo Atual</p>
+                      <p className="text-lg font-black text-[#FE2C55]">{profile?.balance || 0} AC</p>
+                    </div>
+                  </div>
 
-                  <div className="space-y-6">
-                    {selectedMethod === 'airtm' ? (
-                      <div className="space-y-6">
-                        {airtmStep === 1 ? (
-                          <div className="space-y-6">
-                            <div className="flex flex-col items-center mb-4">
-                              <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 mb-2">Passo 01/02</span>
-                              <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-tight">Quanto deseja carregar?</h4>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                              {[0.2, 0.5, 1, 5, 10].map((val) => (
-                                <button 
-                                  key={val}
-                                  onClick={() => setAmountUSD(val.toString())}
-                                  className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
-                                    amountUSD === val.toString() 
-                                    ? 'bg-red-500/20 border-red-500 text-red-500 shadow-lg shadow-red-500/10 scale-[1.02]' 
-                                    : 'bg-zinc-800/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700'
-                                  }`}
-                                >
-                                  <span className="text-lg tracking-tighter truncate">$ {val}</span>
-                                  <span className="text-[10px] opacity-40 italic">{(val * AC_RATE).toLocaleString()} AC</span>
-                                </button>
-                              ))}
-                            </div>
-
-                            {amountUSD && (
-                              <button
-                                onClick={() => setAirtmStep(2)}
-                                className="w-full py-5 bg-zinc-100 text-zinc-950 hover:bg-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 shadow-xl"
-                              >
-                                Próximo Passo <ArrowRight className="w-5 h-5" />
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="space-y-6">
-                            <div className="flex flex-col items-center mb-4">
-                              <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 mb-2">Passo 02/02</span>
-                              <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-tight">Instruções de Envio</h4>
-                            </div>
-
-                            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Envia para @Airtm</span>
-                                <div className="flex items-center gap-1">
-                                  <span className="w-1 h-1 bg-red-400 rounded-full animate-pulse" />
-                                  <span className="text-[8px] text-red-500 font-black uppercase tracking-widest">Saldo: ${amountUSD}</span>
-                                </div>
-                              </div>
-                              
-                              <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 flex items-center justify-between group">
-                                <span className="text-zinc-100 font-black tracking-tight text-base">angochat</span>
-                                <button 
-                                  onClick={() => {
-                                    navigator.clipboard.writeText('angochat');
-                                    setMessage('Copiado!');
-                                    setTimeout(() => setMessage(null), 2000);
-                                  }}
-                                  className="px-4 py-2 bg-red-500/10 text-red-500 text-[10px] font-black rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest"
-                                >
-                                  Copiar
-                                </button>
-                              </div>
-
-                              <div className="space-y-2">
-                                <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tighter">
-                                  1. Abra sua conta Airtm<br />
-                                  2. Selecione "Enviar" e use o usuário <span className="text-red-500">angochat</span><br />
-                                  3. Envie exatamente <span className="text-red-500">${amountUSD}</span><br />
-                                  4. Cole o ID da transação abaixo:
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="relative group">
-                              <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-red-500 transition-colors" />
-                              <input
-                                type="text"
-                                placeholder="ID da Transação"
-                                value={transactionRef}
-                                onChange={(e) => setTransactionRef(e.target.value)}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl py-5 pl-12 pr-6 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-bold"
-                              />
-                            </div>
-
-                            {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase rounded-xl tracking-wider">{error}</div>}
-                            {message && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase rounded-xl tracking-wider text-center">{message}</div>}
-
-                            <button
-                              onClick={async () => {
-                                if (!amountUSD || !transactionRef) {
-                                  setError('Preencha as informações solicitadas.');
-                                  return;
-                                }
-                                setIsPaying(true);
-                                setError(null);
-                                
-                                try {
-                                  const { error: insertError } = await supabase
-                                    .from('transactions')
-                                    .insert([{
-                                      user_id: session.user.id,
-                                      amount: Number(amountUSD),
-                                      method: 'airtm',
-                                      transaction_ref: transactionRef,
-                                      status: 'pending'
-                                    }]);
-
-                                  if (insertError) throw insertError;
-
-                                  setMessage('ENVIADO! Aguarde a verificação administrativa.');
-                                  setTransactionRef('');
-                                  setAmountUSD('');
-                                  setTimeout(() => {
-                                    setAirtmStep(1);
-                                    setSelectedMethod(null);
-                                    setMessage(null);
-                                  }, 3000);
-                                } catch (err: any) {
-                                  console.error('Error saving transaction:', err);
-                                  setError('Erro de conexão. Tente novamente.');
-                                } finally {
-                                  setIsPaying(false);
-                                }
-                              }}
-                              disabled={isPaying || !amountUSD || !transactionRef}
-                              className="w-full py-6 bg-red-500 hover:bg-red-600 text-white rounded-[2rem] font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl shadow-red-500/40 uppercase tracking-widest italic"
-                            >
-                              {isPaying ? <Loader2 className="w-7 h-7 animate-spin" /> : 'Confirmar Envio'}
-                            </button>
-                          </div>
-                        )}
+                  <div className="space-y-8">
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-900 mb-4">Escolha a quantidade de AngoCoins</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {[1, 5, 10, 20, 50, 100].map((val) => (
+                          <button 
+                            key={val}
+                            onClick={() => setAmountUSD(val.toString())}
+                            className={`py-5 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
+                              amountUSD === val.toString() 
+                              ? 'bg-zinc-50 border-[#FE2C55] text-zinc-900' 
+                              : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50 hover:border-zinc-200'
+                            }`}
+                          >
+                            <span className="text-xs font-bold opacity-70 mb-1">{val * AC_RATE} AC</span>
+                            <span className="text-xl font-black leading-none">$ {val}</span>
+                          </button>
+                        ))}
                       </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-3 gap-4">
-                          {[1, 5, 10].map((val) => (
-                            <button 
-                              key={val}
-                              onClick={() => setAmountUSD(val.toString())}
-                              className={`py-4 rounded-xl text-sm font-bold transition-all flex flex-col items-center border-2 ${
-                                amountUSD === val.toString() 
-                                ? 'bg-red-500/20 border-red-500 text-red-500 shadow-lg shadow-red-500/10' 
-                                : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:border-zinc-700'
-                              }`}
-                            >
-                              <span className="text-lg">$ {val}</span>
-                              <span className="text-[10px] opacity-60">{val * AC_RATE} AC</span>
-                            </button>
-                          ))}
-                        </div>
+                    </div>
 
-                        {amountUSD && (
-                          <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-                            <p className="text-sm text-zinc-400">Você receberá</p>
-                            <p className="text-2xl font-black text-red-500">{Number(amountUSD) * AC_RATE} AngoCoins</p>
-                          </div>
-                        )}
+                    {error && <div className="p-4 bg-red-50 border border-red-100 text-red-500 text-sm rounded-xl">{error}</div>}
+                    {message && <div className="p-4 bg-green-50 border border-green-100 text-green-600 text-sm rounded-xl">{message}</div>}
 
-                        {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{error}</div>}
-                        {message && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">{message}</div>}
+                    <button
+                      onClick={handleTopUp}
+                      disabled={isPaying || !amountUSD}
+                      className="w-full py-5 bg-[#FE2C55] hover:bg-[#E1284A] text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                    >
+                      {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
+                    </button>
 
-                        <button
-                          onClick={handleTopUp}
-                          disabled={isPaying || !amountUSD}
-                          className="w-full py-5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-red-500/20"
-                        >
-                          {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Pagamento'}
-                        </button>
-                      </div>
-                    )}
+                    <p className="text-[10px] text-zinc-400 text-center uppercase tracking-widest font-bold">
+                      Pagamento seguro via NOWPayments (Bitcoin/Crypto)
+                    </p>
                   </div>
                 </div>
               </div>
