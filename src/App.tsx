@@ -16,9 +16,24 @@ import {
   TrendingUp,
   Bitcoin,
   Copy,
-  CheckCheck
+  CheckCheck,
+  Coins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const AngoCoinIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <div className={`relative inline-flex items-center justify-center rounded-full bg-gradient-to-b from-[#FFE57F] via-[#FFD740] to-[#FFC400] border border-[#FFAB00] shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.6)] ${className}`}>
+    <div className="absolute inset-[1px] rounded-full border border-[#FFD54F]/50" />
+    <svg viewBox="0 0 24 24" className="w-[65%] h-[65%] text-[#8A6508]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="10" r="4" />
+      <path d="M9 14c-1.5 1-2.5 2-3 3.5" />
+      <path d="M15 14c1.5 1 2.5 2 3 3.5" />
+      <path d="M12 14v4" />
+      <path d="M8 11c-1.5 0-3 1-3.5 2" />
+      <path d="M16 11c1.5 0 3 1 3.5 2" />
+    </svg>
+  </div>
+);
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -391,7 +406,7 @@ export default function App() {
                     </div>
                   ) : (
                     <>
-                      <div className="mb-8 flex justify-between items-center">
+                      <div className="mb-8">
                         <h3 className="text-lg font-black text-zinc-900">
                           @{profile?.username}
                         </h3>
@@ -436,7 +451,10 @@ export default function App() {
                                   : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50 hover:border-zinc-200'
                                 }`}
                               >
-                                <span className="text-xs font-bold opacity-70 mb-1">{val * AC_RATE} AC</span>
+                                <div className="flex items-center gap-1 opacity-70 mb-1">
+                                  <span className="text-xs font-bold">{val * AC_RATE}</span>
+                                  <AngoCoinIcon className="w-3 h-3" />
+                                </div>
                                 <span className="text-xl font-black leading-none">$ {val}</span>
                               </button>
                             ))}
