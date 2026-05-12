@@ -14,7 +14,9 @@ import {
   CreditCard, 
   History,
   TrendingUp,
-  Bitcoin
+  Bitcoin,
+  Copy,
+  CheckCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -31,6 +33,7 @@ export default function App() {
   
   // Payment states
   const [selectedMethod, setSelectedMethod] = useState<string | null>('bitcoin');
+  const [selectedCurrency, setSelectedCurrency] = useState<'btc' | 'usdtbsc'>('usdtbsc');
   const [amountUSD, setAmountUSD] = useState<string>('');
   const [transactionRef, setTransactionRef] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
@@ -42,6 +45,11 @@ export default function App() {
   } | null>(null);
 
   const AC_RATE = 100; // 1 USD/USDT = 100 AC
+
+  const CURRENCIES = [
+    { id: 'usdtbsc', name: 'USDT (BEP20)', icon: Wallet, color: 'text-zinc-900' },
+    { id: 'btc', name: 'Bitcoin', icon: Bitcoin, color: 'text-zinc-900' }
+  ] as const;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -159,6 +167,7 @@ export default function App() {
         body: JSON.stringify({
           amount: Number(amountUSD),
           userId: session.user.id,
+          pay_currency: selectedCurrency,
           orderDescription: `Recarga de ${Number(amountUSD) * AC_RATE} AngoCoins para ${profile?.username}`,
         }),
       });
@@ -300,46 +309,70 @@ export default function App() {
                     <div className="space-y-8">
                       <div className="flex flex-col items-center text-center space-y-2">
                         <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-2">
-                          <Bitcoin className="w-8 h-8 text-zinc-900" />
+                          {paymentDetails.pay_currency === 'btc' ? (
+                            <Bitcoin className="w-8 h-8 text-zinc-900" />
+                          ) : (
+                            <Wallet className="w-8 h-8 text-zinc-900" />
+                          )}
                         </div>
-                        <h3 className="text-xl font-black text-zinc-900">Pagamento Bitcoin</h3>
+                        <h3 className="text-xl font-black text-zinc-900">
+                          Pagamento {paymentDetails.pay_currency === 'btc' ? 'Bitcoin' : 'USDT (BEP20)'}
+                        </h3>
                         <p className="text-sm text-zinc-500">Envie o valor exato para o endereço abaixo</p>
-                      </div>
-
-                      <div className="flex flex-col items-center justify-center bg-zinc-50 rounded-2xl p-6 border border-zinc-100">
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${paymentDetails.pay_address}`}
-                          alt="QR Code de Pagamento"
-                          className="w-40 h-40 mb-4"
-                        />
-                        <div className="text-center">
-                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Valor a Enviar</p>
-                          <p className="text-lg font-black text-zinc-900 uppercase">
-                            {paymentDetails.pay_amount} {paymentDetails.pay_currency}
-                          </p>
-                        </div>
                       </div>
 
                       <div className="space-y-4">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Endereço da Carteira</p>
-                          <div className="flex items-center gap-2 p-4 bg-white border border-zinc-200 rounded-xl">
-                            <span className="flex-1 font-mono text-[10px] break-all text-zinc-600">
-                              {paymentDetails.pay_address}
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Valor a Enviar</p>
+                          <div 
+                            onClick={() => {
+                              navigator.clipboard.writeText(paymentDetails.pay_amount.toString());
+                              setMessage('Valor copiado!');
+                              setTimeout(() => setMessage(null), 2000);
+                            }}
+                            className="flex items-center gap-2 p-4 bg-zinc-50 border border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-100 transition-colors group"
+                          >
+                            <span className="flex-1 font-black text-lg text-zinc-900">
+                              {paymentDetails.pay_amount} {paymentDetails.pay_currency?.toUpperCase()}
                             </span>
-                            <button 
-                              onClick={() => {
-                                navigator.clipboard.writeText(paymentDetails.pay_address);
-                                setMessage('Endereço copiado!');
-                                setTimeout(() => setMessage(null), 2000);
-                              }}
-                              className="p-2 hover:bg-zinc-50 rounded-lg transition-colors"
-                            >
-                              <PlusCircle className="w-4 h-4 text-zinc-900 rotate-45" />
-                            </button>
+                            <div className="p-2 bg-white rounded-lg shadow-sm border border-zinc-100 group-hover:border-zinc-300">
+                              <Copy className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
+                            </div>
                           </div>
                         </div>
 
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Endereço da Carteira</p>
+                          <div 
+                            onClick={() => {
+                              navigator.clipboard.writeText(paymentDetails.pay_address);
+                              setMessage('Endereço copiado!');
+                              setTimeout(() => setMessage(null), 2000);
+                            }}
+                            className="flex items-center gap-2 p-4 bg-zinc-50 border border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-100 transition-colors group"
+                          >
+                            <span className="flex-1 font-mono text-[10px] break-all text-zinc-600">
+                              {paymentDetails.pay_address}
+                            </span>
+                            <div className="p-2 bg-white rounded-lg shadow-sm border border-zinc-100 group-hover:border-zinc-300">
+                              <Copy className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center py-4">
+                        <div className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm">
+                          <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${paymentDetails.pay_address}`}
+                            alt="QR Code de Pagamento"
+                            className="w-40 h-40"
+                          />
+                        </div>
+                        <p className="text-[10px] text-zinc-400 mt-4 uppercase tracking-widest font-bold">QR CODE DE DEPÓSITO</p>
+                      </div>
+
+                      <div className="space-y-4">
                         <div className="p-4 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
                           <p className="text-[10px] text-zinc-500 leading-relaxed text-center">
                             O saldo será creditado automaticamente após a confirmação na rede blockchain (geralmente 10-30 min).
@@ -358,16 +391,42 @@ export default function App() {
                     </div>
                   ) : (
                     <>
-                      <div className="mb-8">
+                      <div className="mb-8 flex justify-between items-center">
                         <h3 className="text-lg font-black text-zinc-900">
                           @{profile?.username}
                         </h3>
                       </div>
 
-                      <div className="space-y-8">
-                        <div>
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Escolha a Moeda</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {CURRENCIES.map((curr) => (
+                              <button
+                                key={curr.id}
+                                onClick={() => {
+                                  setSelectedCurrency(curr.id as any);
+                                  if (curr.id === 'btc' && amountUSD !== '10' && amountUSD !== '20') {
+                                    setAmountUSD('');
+                                  }
+                                }}
+                                className={`p-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${
+                                  selectedCurrency === curr.id
+                                  ? 'bg-zinc-50 border-zinc-900 text-zinc-900'
+                                  : 'bg-white border-zinc-100 text-zinc-400 hover:bg-zinc-50'
+                                }`}
+                              >
+                                <curr.icon className={`w-4 h-4 ${selectedCurrency === curr.id ? 'text-zinc-900' : 'text-zinc-300'}`} />
+                                <span className="text-xs font-bold">{curr.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Quantidade de AngoCoins</p>
                           <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
-                            {[10, 20, 50, 100].map((val) => (
+                            {[1, 5, 10, 20].filter(val => selectedCurrency !== 'btc' || val >= 10).map((val) => (
                               <button 
                                 key={val}
                                 onClick={() => setAmountUSD(val.toString())}

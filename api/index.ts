@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
   if (path.includes('/create')) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
     
-    const { amount, userId, orderDescription } = req.body;
+    const { amount, userId, orderDescription, pay_currency } = req.body;
     
     // Validações básicas
     if (!amount || !userId) {
@@ -36,7 +36,7 @@ export default async function handler(req: any, res: any) {
     const baseUrl = process.env.APP_URL || `${protocol}://${host}`;
 
     try {
-      console.log(`Iniciando criação de pagamento direto: User=${userId}, Valor=${amount}`);
+      console.log(`Iniciando criação de pagamento direto: User=${userId}, Valor=${amount}, Currency=${pay_currency || 'btc'}`);
       
       const response = await fetch("https://api.nowpayments.io/v1/payment", {
         method: "POST",
@@ -47,7 +47,7 @@ export default async function handler(req: any, res: any) {
         body: JSON.stringify({
           price_amount: amount,
           price_currency: "usd",
-          pay_currency: "btc",
+          pay_currency: pay_currency || "btc",
           order_id: `${userId}_${Date.now()}`,
           order_description: orderDescription || "Compra de AngoCoins",
           ipn_callback_url: `${baseUrl}/api/webhook`
@@ -62,7 +62,7 @@ export default async function handler(req: any, res: any) {
         
         // Tradução amigável para erro de valor mínimo
         if (errorMsg.includes('minimal') || data.code === 'AMOUNT_MINIMAL_ERROR') {
-          errorMsg = "O valor escolhido é muito baixo para pagar com Bitcoin. Por favor, escolha uma quantia maior (recomendado $10 ou mais).";
+          errorMsg = `O valor escolhido é muito baixo para pagar com ${pay_currency?.toUpperCase() || 'BITCOIN'}. Por favor, escolha uma quantia maior ou troque a moeda.`;
         }
 
         return res.status(response.status).json({ 
