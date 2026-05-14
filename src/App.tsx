@@ -441,7 +441,7 @@ export default function App() {
                         <div className="space-y-3">
                           <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Quantidade de AngoCoins</p>
                           <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
-                            {[1, 5, 10, 20].filter(val => selectedCurrency !== 'btc' || val >= 10).map((val) => (
+                            {[0.1, 0.5, 1, 5, 10, 20].filter(val => selectedCurrency !== 'btc' || (val >= 10 && val <= 20)).map((val) => (
                               <button 
                                 key={val}
                                 onClick={() => setAmountUSD(val.toString())}
@@ -455,7 +455,7 @@ export default function App() {
                                   <span className="text-xs font-bold">{val * AC_RATE}</span>
                                   <AngoCoinIcon className="w-3 h-3" />
                                 </div>
-                                <span className="text-xl font-black leading-none">$ {val}</span>
+                                <span className="text-xl font-black leading-none">$ {val < 1 ? val.toFixed(2) : val}</span>
                               </button>
                             ))}
                           </div>
