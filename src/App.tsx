@@ -414,7 +414,6 @@ export default function App() {
 
                       <div className="space-y-6">
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Escolha a Moeda</p>
                           <div className="grid grid-cols-2 gap-3">
                             {CURRENCIES.map((curr) => (
                               <button
@@ -422,6 +421,8 @@ export default function App() {
                                 onClick={() => {
                                   setSelectedCurrency(curr.id as any);
                                   if (curr.id === 'btc' && amountUSD !== '10' && amountUSD !== '20') {
+                                    setAmountUSD('');
+                                  } else if (curr.id === 'usdtbsc' && (amountUSD === '10' || amountUSD === '20')) {
                                     setAmountUSD('');
                                   }
                                 }}
@@ -439,9 +440,14 @@ export default function App() {
                         </div>
 
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Quantidade de AngoCoins</p>
                           <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
-                            {[0.1, 0.5, 1, 5, 10, 20].filter(val => selectedCurrency !== 'btc' || (val >= 10 && val <= 20)).map((val) => (
+                            {[0.1, 0.5, 1, 5, 10, 20].filter(val => {
+                              if (selectedCurrency === 'btc') {
+                                return val === 10 || val === 20;
+                              } else {
+                                return val !== 10 && val !== 20;
+                              }
+                            }).map((val) => (
                               <button 
                                 key={val}
                                 onClick={() => setAmountUSD(val.toString())}

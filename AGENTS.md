@@ -9,8 +9,8 @@ This document defines the mandatory architectural and design baseline for the An
 - **Database**: Supabase PostgreSQL for user profiles (`profiles` table).
 
 ## 2. Payment Logic Rules
-- **USDT (BEP20)**: Identifier is `usdtbsc`. It is the default currency and allows values from $1.
-- **Bitcoin**: Identifier is `btc`. **MANDATORY**: Only available for values of $10 and $20. For values below $10, the Bitcoin option must be hidden or disabled.
+- **USDT (BEP20)**: Identifier is `usdtbsc`. It is the default currency and allows values of $0.10, $0.50, $1 and $5. The $10 and $20 options must be removed for USDT.
+- **Bitcoin**: Identifier is `btc`. **MANDATORY**: Only available for values of $10 and $20. For all other values, the Bitcoin option must be hidden or disabled.
 - **Verification**: All payments must be verified via the server-side webhook flow.
 
 ## 3. UI & Design Standards
