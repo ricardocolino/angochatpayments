@@ -49,7 +49,7 @@ export default function App() {
   // Payment states
   const [selectedMethod, setSelectedMethod] = useState<string | null>('bitcoin');
   const [selectedCurrency, setSelectedCurrency] = useState<'btc' | 'usdtbsc'>('usdtbsc');
-  const [amountUSD, setAmountUSD] = useState<string>('');
+  const [amountUSD, setAmountUSD] = useState<string>('0.1');
   const [transactionRef, setTransactionRef] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState<{
@@ -407,7 +407,7 @@ export default function App() {
                   ) : (
                     <>
                       <div className="mb-8">
-                        <h3 className="text-lg font-black text-zinc-900">
+                        <h3 className="text-sm font-bold text-zinc-500">
                           @{profile?.username}
                         </h3>
                       </div>
@@ -421,9 +421,9 @@ export default function App() {
                                 onClick={() => {
                                   setSelectedCurrency(curr.id as any);
                                   if (curr.id === 'btc' && amountUSD !== '10' && amountUSD !== '20') {
-                                    setAmountUSD('');
+                                    setAmountUSD('10');
                                   } else if (curr.id === 'usdtbsc' && (amountUSD === '10' || amountUSD === '20')) {
-                                    setAmountUSD('');
+                                    setAmountUSD('0.1');
                                   }
                                 }}
                                 className={`p-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${
@@ -461,7 +461,7 @@ export default function App() {
                                   <span className="text-xs font-bold">{val * AC_RATE}</span>
                                   <AngoCoinIcon className="w-3 h-3" />
                                 </div>
-                                <span className="text-xl font-black leading-none">$ {val < 1 ? val.toFixed(2) : val}</span>
+                                <span className="text-xl font-black leading-none">$ {val.toFixed(2).replace('.', ',')}</span>
                               </button>
                             ))}
                           </div>
@@ -473,9 +473,9 @@ export default function App() {
                         <button
                           onClick={handleTopUp}
                           disabled={isPaying || !amountUSD}
-                          className="w-full py-5 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                          className="w-full py-5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4 shadow-sm"
                         >
-                          {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Recarregar Agora'}
+                          {isPaying ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Pay'}
                         </button>
                       </div>
                     </>
