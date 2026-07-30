@@ -125,7 +125,7 @@ export default async function handler(req: any, res: any) {
       try {
         const { data: profile, error: fetchError } = await supabaseAdmin
           .from('profiles')
-          .select('balance')
+          .select('id, balance')
           .eq('id', userId)
           .maybeSingle();
         
@@ -136,17 +136,34 @@ export default async function handler(req: any, res: any) {
         const currentBalance = profile?.balance || 0;
         const newBalance = currentBalance + coins;
 
-        const { error: updateError } = await supabaseAdmin
-          .from('profiles')
-          .upsert({ id: userId, balance: newBalance }, { onConflict: 'id' });
+        if (profile) {
+          const { error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update({ balance: newBalance })
+            .eq('id', userId);
 
-        if (updateError) {
-          console.error('Erro ao atualizar saldo no Supabase:', updateError);
-          throw updateError;
+          if (updateError) {
+            console.error('Erro ao atualizar saldo no Supabase:', updateError);
+            throw updateError;
+          }
+        } else {
+          const { error: insertError } = await supabaseAdmin
+            .from('profiles')
+            .insert({ 
+              id: userId, 
+              balance: newBalance,
+              username: `user_${userId.slice(0, 8)}`,
+              name: `User ${userId.slice(0, 8)}`
+            });
+
+          if (insertError) {
+            console.error('Erro ao criar perfil no Supabase:', insertError);
+            throw insertError;
+          }
         }
         
         console.log(`✅ Sucesso: ${coins} AC creditados ao usuário ${userId}. Novo saldo: ${newBalance}`);
-        return res.status(200).send('OK');
+        return res.status(200).json({ status: 'success', userId, addedCoins: coins, newBalance });
       } catch (err: any) {
         console.error('Erro no Supabase durante webhook:', err);
         return res.status(500).send('Error updating balance: ' + (err.message || err));
