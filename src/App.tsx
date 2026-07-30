@@ -100,6 +100,41 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    fetchProfile(session.user.id);
+
+    // Inscrição em tempo real no Supabase para atualizar o saldo assim que o webhook responder
+    const profileChannel = supabase
+      .channel(`profile-${session.user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            setProfile(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    // Polling de 5s como garantia caso o Realtime do Supabase não esteja ativado na tabela
+    const interval = setInterval(() => {
+      fetchProfile(session.user.id);
+    }, 5000);
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+      clearInterval(interval);
+    };
+  }, [session?.user?.id]);
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase

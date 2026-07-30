@@ -95,32 +95,64 @@ export default async function handler(req: any, res: any) {
     if (secret && signature) {
       const rawBody = JSON.stringify(payload, Object.keys(payload).sort());
       const hmac = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
-      if (hmac !== signature) return res.status(401).send('Invalid signature');
+      if (hmac !== signature) {
+        console.error('Assinatura HMAC inválida no Webhook');
+        return res.status(401).send('Invalid signature');
+      }
     }
 
-    if (payload.payment_status === 'finished') {
+    const status = (payload.payment_status || '').toLowerCase();
+    console.log(`Webhook NOWPayments recebido: Status=${status}, OrderID=${payload.order_id}, PriceAmount=${payload.price_amount}`);
+
+    if (status === 'finished' || status === 'confirmed') {
       const orderId = payload.order_id;
       const userId = orderId?.split('_')[0];
-      if (!userId) return res.status(400).send('Invalid order_id');
+      if (!userId) {
+        console.error('Webhook erro: order_id inválido:', orderId);
+        return res.status(400).send('Invalid order_id');
+      }
 
-      const amountUSD = parseFloat(payload.actually_paid || payload.price_amount);
-      const coins = Math.floor(amountUSD * 100);
+      // IMPORTANTE: price_amount ou outcome_amount é o valor em USD (ex: 10, 0.1, 1).
+      // actually_paid é a quantia em Cripto (ex: 0.00025 BTC). Usamos price_amount/outcome_amount para o cálculo em USD!
+      const priceUSD = parseFloat(payload.price_amount || payload.outcome_amount || '0');
+      const coins = Math.round(priceUSD * 100);
+
+      if (coins <= 0) {
+        console.warn(`Webhook aviso: 0 coins calculadas para o pedido ${orderId}`);
+        return res.status(200).send('Zero coins');
+      }
 
       try {
-        const { data: profile, error: fetchError } = await supabaseAdmin.from('profiles').select('balance').eq('id', userId).single();
-        if (fetchError) throw fetchError;
+        const { data: profile, error: fetchError } = await supabaseAdmin
+          .from('profiles')
+          .select('balance')
+          .eq('id', userId)
+          .maybeSingle();
         
-        const newBalance = (profile?.balance || 0) + coins;
-        const { error: updateError } = await supabaseAdmin.from('profiles').update({ balance: newBalance }).eq('id', userId);
-        if (updateError) throw updateError;
+        if (fetchError) {
+          console.error('Erro ao buscar perfil no Supabase:', fetchError);
+        }
+
+        const currentBalance = profile?.balance || 0;
+        const newBalance = currentBalance + coins;
+
+        const { error: updateError } = await supabaseAdmin
+          .from('profiles')
+          .upsert({ id: userId, balance: newBalance }, { onConflict: 'id' });
+
+        if (updateError) {
+          console.error('Erro ao atualizar saldo no Supabase:', updateError);
+          throw updateError;
+        }
         
-        console.log(`✅ Sucesso: ${coins} AC creditados ao usuário ${userId}`);
+        console.log(`✅ Sucesso: ${coins} AC creditados ao usuário ${userId}. Novo saldo: ${newBalance}`);
         return res.status(200).send('OK');
       } catch (err: any) {
         console.error('Erro no Supabase durante webhook:', err);
-        return res.status(500).send('Error updating balance');
+        return res.status(500).send('Error updating balance: ' + (err.message || err));
       }
     }
+
     return res.status(200).send('Ignored');
   }
 
