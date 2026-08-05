@@ -83,43 +83,69 @@ export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') return res.status(405).send('Method not allowed');
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Webhook falhou: Supabase não configurado.");
-      return res.status(500).send('Supabase config missing');
+      console.error("Webhook falhou: Supabase URL ou Service Role Key faltando.");
+      return res.status(500).json({ error: 'Supabase config missing (SUPABASE_SERVICE_ROLE_KEY required)' });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     const secret = process.env.NOWPAYMENTS_IPN_SECRET;
     const signature = req.headers['x-nowpayments-sig'];
-    const payload = req.body;
+    const payload = req.body || {};
+
+    console.log("=== Webhook NOWPayments Recebido ===");
+    console.log("Headers:", JSON.stringify(req.headers));
+    console.log("Payload:", JSON.stringify(payload));
 
     if (secret && signature) {
-      const rawBody = JSON.stringify(payload, Object.keys(payload).sort());
-      const hmac = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
-      if (hmac !== signature) {
-        console.error('Assinatura HMAC inválida no Webhook');
-        return res.status(401).send('Invalid signature');
+      try {
+        const rawBody = JSON.stringify(payload, Object.keys(payload).sort());
+        const hmac = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
+        if (hmac !== signature) {
+          console.error(`Assinatura HMAC inválida no Webhook. Calculado: ${hmac}, Recebido: ${signature}`);
+          return res.status(401).json({ error: 'Invalid HMAC signature' });
+        }
+      } catch (err: any) {
+        console.error("Erro na validação de assinatura HMAC:", err);
       }
     }
 
     const status = (payload.payment_status || '').toLowerCase();
-    console.log(`Webhook NOWPayments recebido: Status=${status}, OrderID=${payload.order_id}, PriceAmount=${payload.price_amount}`);
+    console.log(`Status do Pagamento: ${status}, Order ID: ${payload.order_id}`);
 
-    if (status === 'finished' || status === 'confirmed') {
+    if (['finished', 'confirmed', 'partially_paid'].includes(status)) {
       const orderId = payload.order_id;
-      const userId = orderId?.split('_')[0];
-      if (!userId) {
-        console.error('Webhook erro: order_id inválido:', orderId);
-        return res.status(400).send('Invalid order_id');
+      let userId = orderId?.split('_')[0];
+      
+      // Fallback para caso order_id seja apenas o próprio userId
+      if (!userId || userId.length < 10) {
+        userId = orderId;
       }
 
-      // IMPORTANTE: price_amount ou outcome_amount é o valor em USD (ex: 10, 0.1, 1).
-      // actually_paid é a quantia em Cripto (ex: 0.00025 BTC). Usamos price_amount/outcome_amount para o cálculo em USD!
-      const priceUSD = parseFloat(payload.price_amount || payload.outcome_amount || '0');
+      if (!userId) {
+        console.error('Webhook erro: order_id inválido ou ausente:', orderId);
+        return res.status(400).json({ error: 'Invalid order_id' });
+      }
+
+      // IMPORTANTE: Tenta obter o valor em USD por vários campos do NOWPayments
+      const rawPrice = payload.price_amount ?? payload.outcome_amount ?? payload.actually_paid_at_fiat ?? payload.amount ?? '0';
+      const priceUSD = parseFloat(rawPrice.toString());
       const coins = Math.round(priceUSD * 100);
+
+      console.log(`Cálculo de coins: rawPrice=${rawPrice}, priceUSD=${priceUSD}, coins=${coins} para userId=${userId}`);
 
       if (coins <= 0) {
         console.warn(`Webhook aviso: 0 coins calculadas para o pedido ${orderId}`);
-        return res.status(200).send('Zero coins');
+        // Registrar log de aviso para o usuário
+        try {
+          await supabaseAdmin.from('payment_logs').insert({
+            user_id: userId,
+            order_id: orderId,
+            status: 'warning',
+            message: 'Webhook recebido, mas o valor calculado em USD foi 0.',
+            coins: 0
+          });
+        } catch (_) {}
+        return res.status(200).json({ message: 'Zero coins' });
       }
 
       try {
@@ -133,7 +159,7 @@ export default async function handler(req: any, res: any) {
           console.error('Erro ao buscar perfil no Supabase:', fetchError);
         }
 
-        const currentBalance = profile?.balance || 0;
+        const currentBalance = parseFloat((profile?.balance || 0).toString());
         const newBalance = currentBalance + coins;
 
         if (profile) {
@@ -162,15 +188,50 @@ export default async function handler(req: any, res: any) {
           }
         }
         
-        console.log(`✅ Sucesso: ${coins} AC creditados ao usuário ${userId}. Novo saldo: ${newBalance}`);
-        return res.status(200).json({ status: 'success', userId, addedCoins: coins, newBalance });
+        // Tenta gravar log de sucesso na tabela payment_logs
+        try {
+          await supabaseAdmin.from('payment_logs').insert({
+            user_id: userId,
+            order_id: orderId,
+            status: 'success',
+            message: `Pagamento confirmado! ${coins} AC creditados com sucesso.`,
+            coins: coins
+          });
+        } catch (_) {}
+
+        console.log(`✅ Sucesso: ${coins} AC creditados ao usuário ${userId}. Saldo anterior: ${currentBalance}, Novo saldo: ${newBalance}`);
+        return res.status(200).json({ status: 'success', userId, addedCoins: coins, previousBalance: currentBalance, newBalance });
       } catch (err: any) {
         console.error('Erro no Supabase durante webhook:', err);
-        return res.status(500).send('Error updating balance: ' + (err.message || err));
+        // Tenta registrar o erro para o usuário
+        try {
+          await supabaseAdmin.from('payment_logs').insert({
+            user_id: userId,
+            order_id: orderId,
+            status: 'error',
+            message: `Erro ao creditar saldo: ${err.message || 'Erro no banco de dados'}`,
+            coins: 0
+          });
+        } catch (_) {}
+        return res.status(500).json({ error: 'Error updating balance: ' + (err.message || err) });
+      }
+    } else if (['failed', 'refunded', 'expired'].includes(status)) {
+      const orderId = payload.order_id;
+      let userId = orderId?.split('_')[0];
+      if (userId) {
+        try {
+          await supabaseAdmin.from('payment_logs').insert({
+            user_id: userId,
+            order_id: orderId,
+            status: 'failed',
+            message: `O pagamento falhou ou expirou na NOWPayments (Status: ${status}).`,
+            coins: 0
+          });
+        } catch (_) {}
       }
     }
 
-    return res.status(200).send('Ignored');
+    return res.status(200).json({ message: `Ignored status: ${status}` });
   }
 
   return res.status(404).json({ error: 'Rota não encontrada: ' + path });
