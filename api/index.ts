@@ -159,8 +159,8 @@ export default async function handler(req: any, res: any) {
           console.error('Erro ao buscar perfil no Supabase:', fetchError);
         }
 
-        const currentBalance = parseFloat((profile?.balance || 0).toString());
-        const newBalance = currentBalance + coins;
+        const currentBalance = profile?.balance != null ? parseFloat(profile.balance.toString()) : 0;
+        const newBalance = Math.round((currentBalance + coins) * 100) / 100;
 
         if (profile) {
           const { error: updateError } = await supabaseAdmin
@@ -173,18 +173,25 @@ export default async function handler(req: any, res: any) {
             throw updateError;
           }
         } else {
+          // Tenta criar o perfil com id e balance (e username se suportado)
           const { error: insertError } = await supabaseAdmin
             .from('profiles')
             .insert({ 
               id: userId, 
               balance: newBalance,
-              username: `user_${userId.slice(0, 8)}`,
-              name: `User ${userId.slice(0, 8)}`
+              username: `user_${userId.slice(0, 8)}`
             });
 
           if (insertError) {
-            console.error('Erro ao criar perfil no Supabase:', insertError);
-            throw insertError;
+            console.warn('Erro com username, tentando criar perfil apenas com id e balance:', insertError);
+            const { error: fallbackError } = await supabaseAdmin
+              .from('profiles')
+              .insert({ id: userId, balance: newBalance });
+
+            if (fallbackError) {
+              console.error('Erro ao criar perfil no Supabase:', fallbackError);
+              throw fallbackError;
+            }
           }
         }
         
