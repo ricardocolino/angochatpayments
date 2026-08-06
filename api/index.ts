@@ -34,9 +34,10 @@ export default async function handler(req: any, res: any) {
     const protocol = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers.host;
     const baseUrl = process.env.APP_URL || `${protocol}://${host}`;
+    const ipnCallbackUrl = process.env.NOWPAYMENTS_IPN_URL || process.env.IPN_CALLBACK_URL || `${baseUrl}/api/payments/webhook`;
 
     try {
-      console.log(`Iniciando criação de pagamento direto: User=${userId}, Valor=${amount}, Currency=${pay_currency || 'btc'}`);
+      console.log(`Iniciando criação de pagamento direto: User=${userId}, Valor=${amount}, Currency=${pay_currency || 'btc'}, IPNUrl=${ipnCallbackUrl}`);
       
       const response = await fetch("https://api.nowpayments.io/v1/payment", {
         method: "POST",
@@ -50,7 +51,7 @@ export default async function handler(req: any, res: any) {
           pay_currency: pay_currency || "btc",
           order_id: `${userId}_${Date.now()}`,
           order_description: orderDescription || "Compra de AngoCoins",
-          ipn_callback_url: `${baseUrl}/api/webhook`
+          ipn_callback_url: ipnCallbackUrl
         }),
       });
 
